@@ -1,0 +1,44 @@
+
+version: '3'
+
+services: 
+
+  rundeck-oss:
+    image: rundeck/rundeck:4.5.0
+    ports:
+     - "4440:4440"
+     - "22"
+    links:
+      - mysql
+    environment:
+      - RUNDECK_GRAILS_URL=https://rundeck.sushicorp.menu
+      - RUNDECK_SERVER_FORWARDED=true
+      - CONFIG_SCRIPT_PRESTART=scripts/database,scripts/authentication
+      #- CONFIG_SCRIPT_POSTSTART=scripts/import_project
+      - RUNDECK_DATABASE_DRIVER=org.mariadb.jdbc.Driver
+      - RUNDECK_DATABASE_URL=jdbc:mysql://mysql/rundeckdb?autoReconnect=true&useUnicode=yes
+      - RUNDECK_DATABASE_USERNAME=rundeck_username
+      - RUNDECK_DATABASE_PASSWORD=rundeck_password_change_me. # change it!
+      - RUNDECK_DATABASE_DIALECT=org.hibernate.dialect.MySQL5InnoDBDialect
+      - RUNDECK_LDAP_AUTH_TYPE=ad # ldap, ad
+      - RUNDECK_LDAP_URL=ldaps://ldapserver:636
+      - RUNDECK_LDAP_BIND_USER=CN=rundeck.connect,CN=Users,DC=sushicorp,DC=menu
+      - RUNDECK_LDAP_BIND_PASSWORD=ldap_bind_password_change_me. # change it!
+      - RUNDECK_LDAP_ROLES_BASE_DN=CN=Roles,DC=sushicorp,DC=menu
+      - RUNDECK_LDAP_USER_BASE_DN=CN=Users,DC=sushicorp,DC=menu
+
+  mysql:
+    image: 'mariadb:10.8.3'
+    ports:
+      - '3306:3306'
+    volumes:
+      - 'mysql_data:/var/lib/mysql'
+    environment:
+      - MYSQL_ROOT_PASSWORD=rundeck_password_change_me. # change it!
+      - MYSQL_USER=rundeck_username
+      - MYSQL_PASSWORD=rundeck_password_change_me. # change it!
+      - MYSQL_DATABASE=rundeckdb
+
+volumes:
+  mysql_data:
+    driver: local
